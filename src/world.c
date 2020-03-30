@@ -1,6 +1,7 @@
 #include "lua_lilv.h"
 #include "world.h"
 #include "plugin.h"
+#include "plugin_class.h"
 
 typedef struct {
     LilvWorld *world;
@@ -14,6 +15,8 @@ static int world_new(lua_State *L);
 static int world_free(lua_State *L);
 static int world_load_all(lua_State *L);
 static int world_get_all_plugins(lua_State *L);
+static int world_get_plugin_class(lua_State *L);
+static int world_get_plugin_classes(lua_State *L);
 
 //
 // world object methods
@@ -26,6 +29,8 @@ static luaL_Reg world_methods[] = {
     {"__gc", world_free},
     {"load_all", world_load_all},
     {"get_all_plugins", world_get_all_plugins},
+    {"get_plugin_class", world_get_plugin_class},
+    {"get_plugin_classes", world_get_plugin_classes},
     {NULL, NULL}
 };
 
@@ -117,3 +122,28 @@ static int world_get_all_plugins(lua_State *L) {
     return 1;
 }
 
+static int world_get_plugin_class(lua_State *L) {
+    const world_t *w = world_check(L);
+    plugin_class_new(L, lilv_world_get_plugin_class(w->world));
+    return 1;
+}
+
+static int world_get_plugin_classes(lua_State *L) {
+    const world_t *w = world_check(L);
+    const LilvPluginClasses *list = lilv_world_get_plugin_classes(w->world);
+
+    int num_values = 0;
+    int index = 1;
+
+    if (lilv_plugin_classes_size(list) > 0) {
+        lua_newtable(L);
+        LILV_FOREACH(plugin_classes, i, list) {
+            const LilvPluginClass *cc = lilv_plugin_classes_get(list, i);
+            plugin_class_new(L, cc);
+            lua_seti(L, -2, index++);
+        }
+        num_values = 1;
+    }
+
+    return num_values;
+}

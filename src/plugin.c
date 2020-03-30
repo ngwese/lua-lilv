@@ -14,6 +14,7 @@ typedef struct {
 
 static int plugin_verify(lua_State *L);
 static int plugin_get_uri(lua_State *L);
+static int plugin_get_bundle_uri(lua_State *L);
 static int plugin_get_name(lua_State *L);
 static int plugin_get_class(lua_State *L);
 static int plugin_get_num_ports(lua_State *L);
@@ -27,6 +28,7 @@ static char *plugin_classname = "lilv.Plugin";
 static luaL_Reg plugin_methods[] = {
     {"verify", plugin_verify},
     {"get_uri", plugin_get_uri},
+    {"get_bundle_uri", plugin_get_bundle_uri},
     {"get_name", plugin_get_name},
     {"get_class", plugin_get_class},
     {"get_num_ports", plugin_get_num_ports},
@@ -101,6 +103,12 @@ static int plugin_verify(lua_State *L) {
 static int plugin_get_uri(lua_State *L) {
     const plugin_t *p = plugin_check(L);
     lua_pushstring(L, lilv_node_as_uri(lilv_plugin_get_uri(p->plugin)));
+    return 1;
+}
+
+static int plugin_get_bundle_uri(lua_State *L) {
+    const plugin_t *p = plugin_check(L);
+    lua_pushstring(L, lilv_node_as_uri(lilv_plugin_get_bundle_uri(p->plugin)));
     return 1;
 }
 
