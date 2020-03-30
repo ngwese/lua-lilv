@@ -2,6 +2,7 @@
 
 #include "lua_lilv.h"
 #include "plugin.h"
+#include "plugin_class.h"
 
 typedef struct {
     const LilvPlugin *plugin;
@@ -13,6 +14,9 @@ typedef struct {
 
 static int plugin_verify(lua_State *L);
 static int plugin_get_uri(lua_State *L);
+static int plugin_get_name(lua_State *L);
+static int plugin_get_class(lua_State *L);
+static int plugin_get_num_ports(lua_State *L);
 
 //
 // plugin object methods
@@ -23,6 +27,9 @@ static char *plugin_classname = "lilv.Plugin";
 static luaL_Reg plugin_methods[] = {
     {"verify", plugin_verify},
     {"get_uri", plugin_get_uri},
+    {"get_name", plugin_get_name},
+    {"get_class", plugin_get_class},
+    {"get_num_ports", plugin_get_num_ports},
     {NULL, NULL}
 };
 
@@ -94,5 +101,26 @@ static int plugin_verify(lua_State *L) {
 static int plugin_get_uri(lua_State *L) {
     const plugin_t *p = plugin_check(L);
     lua_pushstring(L, lilv_node_as_uri(lilv_plugin_get_uri(p->plugin)));
+    return 1;
+}
+
+static int plugin_get_name(lua_State *L) {
+    const plugin_t *p = plugin_check(L);
+    LilvNode *n = lilv_plugin_get_name(p->plugin);
+    lua_pushstring(L, lilv_node_as_string(n));
+    lilv_node_free(n);
+    return 1;
+}
+
+static int plugin_get_class(lua_State *L) {
+    const plugin_t *p = plugin_check(L);
+    const LilvPluginClass *c = lilv_plugin_get_class(p->plugin);
+    plugin_class_new(L, c);
+    return 1;
+}
+
+static int plugin_get_num_ports(lua_State *L) {
+    const plugin_t *p = plugin_check(L);
+    lua_pushinteger(L, lilv_plugin_get_num_ports(p->plugin));
     return 1;
 }

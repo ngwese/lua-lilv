@@ -19,6 +19,6 @@ print:
 	$(MAKE) -C src $@
 
 test:
-	lua test/test_basic.lua
+	lua5.3 test/test_basic.lua
 
 .PHONY: test
