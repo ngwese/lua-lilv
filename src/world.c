@@ -1,7 +1,8 @@
 #include "lua_lilv.h"
-#include "world.h"
+#include "node.h"
 #include "plugin.h"
 #include "plugin_class.h"
+#include "world.h"
 
 typedef struct {
     LilvWorld *world;
@@ -17,6 +18,13 @@ static int world_load_all(lua_State *L);
 static int world_get_all_plugins(lua_State *L);
 static int world_get_plugin_class(lua_State *L);
 static int world_get_plugin_classes(lua_State *L);
+// node constructors
+static int world_new_uri(lua_State *L);
+static int world_new_file_uri(lua_State *L);
+static int world_new_string(lua_State *L);
+static int world_new_int(lua_State *L);
+static int world_new_float(lua_State *L);
+static int world_new_bool(lua_State *L);
 
 //
 // world object methods
@@ -31,6 +39,12 @@ static luaL_Reg world_methods[] = {
     {"get_all_plugins", world_get_all_plugins},
     {"get_plugin_class", world_get_plugin_class},
     {"get_plugin_classes", world_get_plugin_classes},
+    {"new_uri", world_new_uri},
+    {"new_file_uri", world_new_file_uri},
+    {"new_string", world_new_string},
+    {"new_int", world_new_int},
+    {"new_float", world_new_float},
+    {"new_bool", world_new_bool},
     {NULL, NULL}
 };
 
@@ -146,4 +160,46 @@ static int world_get_plugin_classes(lua_State *L) {
     }
 
     return num_values;
+}
+
+static int world_new_uri(lua_State *L) {
+    world_t *w = world_check(L);
+    const char *uri = luaL_checkstring(L, -1);
+    node_new(L, lilv_new_uri(w->world, uri), true /* is_owner */);
+    return 1;
+}
+
+static int world_new_file_uri(lua_State *L) {
+    world_t *w = world_check(L);
+    const char *host = luaL_checkstring(L, -2);
+    const char *path = luaL_checkstring(L, -1);
+    node_new(L, lilv_new_file_uri(w->world, host, path), true /* is_owner */);
+    return 1;
+}
+
+static int world_new_string(lua_State *L) {
+    world_t *w = world_check(L);
+    const char *s = luaL_checkstring(L, -1);
+    node_new(L, lilv_new_string(w->world, s), true /* is_owner */);
+    return 1;
+}
+
+static int world_new_int(lua_State *L) {
+    world_t *w = world_check(L);
+    lua_Integer n = luaL_checkinteger(L, -1);
+    node_new(L, lilv_new_int(w->world, n), true /* is_owner */);
+    return 1;
+}
+
+static int world_new_float(lua_State *L) {
+    world_t *w = world_check(L);
+    lua_Number n = luaL_checknumber(L, -1);
+    node_new(L, lilv_new_float(w->world, n), true /* is_owner */);
+    return 1;
+}
+
+static int world_new_bool(lua_State *L) {
+    world_t *w = world_check(L);
+    node_new(L, lilv_new_bool(w->world, lua_toboolean(L, -1)), true /* is_owner */);
+    return 1;
 }

@@ -158,9 +158,11 @@ LUALIB             = $(LUALIB_$(PLAT))
 #
 LILV_OBJS = \
 	lua_lilv.$(O) \
+	node.$(O) \
 	world.$(O) \
 	plugin.$(O) \
 	plugin_class.$(O)
+
 
 #------
 # Files to install

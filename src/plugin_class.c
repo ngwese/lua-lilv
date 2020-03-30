@@ -1,5 +1,6 @@
 #include "lua_lilv.h"
 #include "plugin_class.h"
+#include "node.h"
 
 typedef struct {
     const LilvPluginClass *class;
@@ -92,6 +93,7 @@ static int plugin_class_get_parent_uri(lua_State *L) {
     const LilvNode *pc = lilv_plugin_class_get_parent_uri(c->class);
     if (pc != NULL) {
         lua_pushstring(L, lilv_node_as_uri(pc));
+
         return 1;
     }
     return 0;
@@ -99,7 +101,8 @@ static int plugin_class_get_parent_uri(lua_State *L) {
 
 static int plugin_class_get_uri(lua_State *L) {
     const plugin_class_t *c = plugin_class_check(L);
-    lua_pushstring(L, lilv_node_as_uri(lilv_plugin_class_get_uri(c->class)));
+    //lua_pushstring(L, lilv_node_as_uri(lilv_plugin_class_get_uri(c->class)));
+    node_new(L, (LilvNode *)lilv_plugin_class_get_uri(c->class), false /* is_owned */);
     return 1;
 }
 

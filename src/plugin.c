@@ -1,6 +1,7 @@
 #include "lilv/lilv.h"
 
 #include "lua_lilv.h"
+#include "node.h"
 #include "plugin.h"
 #include "plugin_class.h"
 
@@ -102,13 +103,15 @@ static int plugin_verify(lua_State *L) {
 
 static int plugin_get_uri(lua_State *L) {
     const plugin_t *p = plugin_check(L);
-    lua_pushstring(L, lilv_node_as_uri(lilv_plugin_get_uri(p->plugin)));
+    //lua_pushstring(L, lilv_node_as_uri(lilv_plugin_get_uri(p->plugin)));
+    node_new(L, (LilvNode *)lilv_plugin_get_uri(p->plugin), false /* is_owned */);  // FIXME: const
     return 1;
 }
 
 static int plugin_get_bundle_uri(lua_State *L) {
     const plugin_t *p = plugin_check(L);
-    lua_pushstring(L, lilv_node_as_uri(lilv_plugin_get_bundle_uri(p->plugin)));
+    //lua_pushstring(L, lilv_node_as_uri(lilv_plugin_get_bundle_uri(p->plugin)));
+    node_new(L, (LilvNode *)lilv_plugin_get_bundle_uri(p->plugin), false /* is_owned */); // FIXME: const
     return 1;
 }
 
@@ -117,6 +120,7 @@ static int plugin_get_name(lua_State *L) {
     LilvNode *n = lilv_plugin_get_name(p->plugin);
     lua_pushstring(L, lilv_node_as_string(n));
     lilv_node_free(n);
+    //node_new(L, (LilvNode *)lilv_plugin_get_name(p->plugin), true /* is_owned */);
     return 1;
 }
 

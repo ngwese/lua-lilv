@@ -1,13 +1,15 @@
 
 #include "lua_lilv.h"
-#include "world.h"
+#include "node.h"
 #include "plugin.h"
 #include "plugin_class.h"
+#include "world.h"
 
 static const luaL_Reg mod[] = {
-    {"world", world_open},
+    {"node", node_open},
     {"plugin", plugin_open},
     {"plugin_class", plugin_class_open},
+    {"world", world_open},
     {NULL, NULL}
 };
 
