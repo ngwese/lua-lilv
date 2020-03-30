@@ -113,15 +113,22 @@ static int plugin_class_get_label(lua_State *L) {
 static int plugin_class_get_children(lua_State *L) {
     const plugin_class_t *c = plugin_class_check(L);
     LilvPluginClasses *list = lilv_plugin_class_get_children(c->class);
+
+    int num_values = 0;
     int index = 1;
-    lua_newtable(L);
-    LILV_FOREACH(plugin_classes, i, list) {
-        const LilvPluginClass *c = lilv_plugin_classes_get(list, i);
-        plugin_class_new(L, c);
-        lua_seti(L, -2, index++);
+
+    if (lilv_plugin_classes_size(list) > 0) {
+        lua_newtable(L);
+        LILV_FOREACH(plugin_classes, i, list) {
+            const LilvPluginClass *cc = lilv_plugin_classes_get(list, i);
+            plugin_class_new(L, cc);
+            lua_seti(L, -2, index++);
+        }
+        num_values = 1;
     }
+
     lilv_plugin_classes_free(list);
-    return 1;
+    return num_values;
 }
 
 
