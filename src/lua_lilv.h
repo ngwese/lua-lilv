@@ -10,6 +10,8 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#include "lilv/lilv.h"
+
 LUA_LILV_API int luaopen_lilv_core(lua_State *L);
 
 #endif
