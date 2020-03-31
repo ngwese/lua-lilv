@@ -92,16 +92,15 @@ static int plugin_class_get_parent_uri(lua_State *L) {
     const plugin_class_t *c = plugin_class_check(L);
     const LilvNode *pc = lilv_plugin_class_get_parent_uri(c->class);
     if (pc != NULL) {
-        lua_pushstring(L, lilv_node_as_uri(pc));
-
-        return 1;
+        node_new(L, (LilvNode *)pc, false /* is_owned */);
+    } else {
+        lua_pushnil(L);
     }
-    return 0;
+    return 1;
 }
 
 static int plugin_class_get_uri(lua_State *L) {
     const plugin_class_t *c = plugin_class_check(L);
-    //lua_pushstring(L, lilv_node_as_uri(lilv_plugin_class_get_uri(c->class)));
     node_new(L, (LilvNode *)lilv_plugin_class_get_uri(c->class), false /* is_owned */);
     return 1;
 }

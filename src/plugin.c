@@ -103,14 +103,12 @@ static int plugin_verify(lua_State *L) {
 
 static int plugin_get_uri(lua_State *L) {
     const plugin_t *p = plugin_check(L);
-    //lua_pushstring(L, lilv_node_as_uri(lilv_plugin_get_uri(p->plugin)));
     node_new(L, (LilvNode *)lilv_plugin_get_uri(p->plugin), false /* is_owned */);  // FIXME: const
     return 1;
 }
 
 static int plugin_get_bundle_uri(lua_State *L) {
     const plugin_t *p = plugin_check(L);
-    //lua_pushstring(L, lilv_node_as_uri(lilv_plugin_get_bundle_uri(p->plugin)));
     node_new(L, (LilvNode *)lilv_plugin_get_bundle_uri(p->plugin), false /* is_owned */); // FIXME: const
     return 1;
 }
