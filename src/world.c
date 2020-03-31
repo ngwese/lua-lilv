@@ -165,41 +165,62 @@ static int world_get_plugin_classes(lua_State *L) {
 static int world_new_uri(lua_State *L) {
     world_t *w = world_check(L);
     const char *uri = luaL_checkstring(L, -1);
-    node_new(L, lilv_new_uri(w->world, uri), true /* is_owner */);
-    return 1;
+    LilvNode *n = lilv_new_uri(w->world, uri);
+    if (n) {
+      node_new(L, n, true /* is_owner */);
+      return 1;
+    }
+    return 0;
 }
 
 static int world_new_file_uri(lua_State *L) {
     world_t *w = world_check(L);
     const char *host = luaL_checkstring(L, -2);
     const char *path = luaL_checkstring(L, -1);
-    node_new(L, lilv_new_file_uri(w->world, host, path), true /* is_owner */);
-    return 1;
+    LilvNode *n = lilv_new_file_uri(w->world, host, path);
+    if (n) {
+      node_new(L, n, true /* is_owner */);
+      return 1;
+    }
+    return 0;
 }
 
 static int world_new_string(lua_State *L) {
     world_t *w = world_check(L);
     const char *s = luaL_checkstring(L, -1);
-    node_new(L, lilv_new_string(w->world, s), true /* is_owner */);
-    return 1;
+    LilvNode *n = lilv_new_string(w->world, s);
+    if (n) {
+      node_new(L, n, true /* is_owner */);
+      return 1;
+    }
+    return 0;
 }
 
 static int world_new_int(lua_State *L) {
     world_t *w = world_check(L);
-    lua_Integer n = luaL_checkinteger(L, -1);
-    node_new(L, lilv_new_int(w->world, n), true /* is_owner */);
+    lua_Integer i = luaL_checkinteger(L, -1);
+    LilvNode *n = lilv_new_int(w->world, i);
+    node_new(L, n, true /* is_owner */);
     return 1;
 }
 
 static int world_new_float(lua_State *L) {
     world_t *w = world_check(L);
-    lua_Number n = luaL_checknumber(L, -1);
-    node_new(L, lilv_new_float(w->world, n), true /* is_owner */);
-    return 1;
+    lua_Number f = luaL_checknumber(L, -1);
+    LilvNode *n = lilv_new_float(w->world, f)
+    if (n) {
+      node_new(L, n, true /* is_owner */);
+      return 1;
+    }
+    return 0;
 }
 
 static int world_new_bool(lua_State *L) {
     world_t *w = world_check(L);
-    node_new(L, lilv_new_bool(w->world, lua_toboolean(L, -1)), true /* is_owner */);
-    return 1;
+    LilvNode *n = lilv_new_bool(w->world, lua_toboolean(L, -1));
+    if (n) {
+      node_new(L, n, true /* is_owner */);
+      return 1;
+    }
+    return 0;
 }

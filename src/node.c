@@ -83,14 +83,14 @@ int node_new(lua_State *L, LilvNode *n, bool is_owner) {
 // implementation
 //
 
-static node_t *node_check(lua_State *L) {
-    void *ud = luaL_checkudata(L, 1, node_classname);
-    luaL_argcheck(L, ud != NULL, 1, "'Node' expected");
+static node_t *node_check(lua_State *L, int arg) {
+    void *ud = luaL_checkudata(L, arg, node_classname);
+    luaL_argcheck(L, ud != NULL, arg, "'Node' expected");
     return (node_t *)ud;
 }
 
 static int node_free(lua_State *L) {
-    node_t *n = node_check(L);
+    node_t *n = node_check(L, 1);
     if (n->is_owner) {
         lilv_node_free(n->node);
     }
@@ -99,7 +99,7 @@ static int node_free(lua_State *L) {
 
 static int node_tostring(lua_State *L) {
     char buf[512];
-    node_t *n = node_check(L);
+    node_t *n = node_check(L, 1);
     LilvNode *node = n->node;
 
     if (lilv_node_is_uri(node)) {
@@ -147,14 +147,14 @@ finish:
 
 static int node_equals(lua_State *L) {
     // FIXME: this is broken
-    node_t *a = node_check(L);
-    node_t *b = node_check(L);
+    node_t *a = node_check(L, 1);
+    node_t *b = node_check(L, 2);
     lua_pushboolean(L, lilv_node_equals(a->node, b->node));
     return 1;
 }
 
 static int node_duplicate(lua_State *L) {
-    node_t *n = node_check(L);
+    node_t *n = node_check(L, 1);
     node_new(L, lilv_node_duplicate(n->node), true);
     return 1;
 }
