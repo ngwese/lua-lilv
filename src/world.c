@@ -207,7 +207,7 @@ static int world_new_int(lua_State *L) {
 static int world_new_float(lua_State *L) {
     world_t *w = world_check(L);
     lua_Number f = luaL_checknumber(L, -1);
-    LilvNode *n = lilv_new_float(w->world, f)
+    LilvNode *n = lilv_new_float(w->world, f);
     if (n) {
       node_new(L, n, true /* is_owner */);
       return 1;

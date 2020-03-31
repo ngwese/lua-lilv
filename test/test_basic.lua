@@ -31,10 +31,12 @@ end
 
 function test_node_uri()
   w = lilv.World.new()
+  uri = "http://github.com/ngwese/lua-lilv"
   -- valid
-  a = w:new_uri("http://github.com/ngwese/lua-lilv")
+  a = w:new_uri(uri)
   T.assertNotNil(a)
   T.assertIsUserdata(a)
+  T.assertEquals(a:as_string(), uri)
   -- invalid
   b = w:new_uri("bogus")
   T.assertNil(b)
@@ -54,10 +56,12 @@ function test_node_file_uri()
   c = w:new_file_uri("ahost", "/absolute")
   T.assertNotNil(c)
   T.assertIsUserdata(c)
+  T.assertEquals(c:as_string(), "file://ahost/absolute")
 
   d = w:new_file_uri("", "/absolute")
   T.assertNotNil(d)
   T.assertIsUserdata(d)
+  T.assertEquals(d:as_string(), "file:///absolute")
 end
 
 function test_node_new_string()
@@ -65,6 +69,7 @@ function test_node_new_string()
   a = w:new_string("foo")
   T.assertNotNil(a)
   T.assertIsUserdata(a)
+  T.assertEquals(a:as_string(), "foo")
 end
 
 function test_node_new_int()
@@ -72,6 +77,7 @@ function test_node_new_int()
   a = w:new_int(1234)
   T.assertNotNil(a)
   T.assertIsUserdata(a)
+  T.assertEquals(a:as_string(), "1234")
 end
 
 function test_node_new_float()
@@ -79,6 +85,7 @@ function test_node_new_float()
   a = w:new_float(1234.567)
   T.assertNotNil(a)
   T.assertIsUserdata(a)
+  T.assertStrContains(a:as_string(), "1234.567")
 end
 
 function test_node_new_bool()
@@ -86,6 +93,7 @@ function test_node_new_bool()
   a = w:new_bool(true)
   T.assertNotNil(a)
   T.assertIsUserdata(a)
+  T.assertEquals(a:as_string(), "1")
 end
 
 function test_node_equals()

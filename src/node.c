@@ -12,6 +12,7 @@ typedef struct {
 
 static int node_free(lua_State *L);
 static int node_tostring(lua_State *L);
+static int node_as_string(lua_State *L);
 static int node_equals(lua_State *L);
 static int node_duplicate(lua_State *L);
 
@@ -26,6 +27,7 @@ static luaL_Reg node_methods[] = {
     {"__tostring", node_tostring},
     {"__eq", node_equals},
     {"duplicate", node_duplicate},
+    {"as_string", node_as_string},
     {NULL, NULL}
 };
 
@@ -143,6 +145,38 @@ static int node_tostring(lua_State *L) {
 finish:
     lua_pushfstring(L, "%s %s", node_classname, buf);
     return 1;
+}
+
+static int node_as_string(lua_State *L) {
+    node_t *n = node_check(L, 1);
+    LilvNode *node = n->node;
+
+    if (lilv_node_is_uri(node)) {
+        lua_pushstring(L, lilv_node_as_uri(node));
+        return 1;
+    }
+
+    if (lilv_node_is_string(node)) {
+        lua_pushstring(L, lilv_node_as_string(node));
+        return 1;
+    }
+
+    if (lilv_node_is_float(node)) {
+        lua_pushfstring(L, "%f", lilv_node_as_float(node));
+        return 1;
+    }
+
+    if (lilv_node_is_int(node)) {
+        lua_pushfstring(L, "%d", lilv_node_as_int(node));
+        return 1;
+    }
+
+    if (lilv_node_is_bool(node)) {
+        lua_pushfstring(L, "%d", lilv_node_as_bool(node));
+        return 1;
+    }
+
+    return 0;
 }
 
 static int node_equals(lua_State *L) {
