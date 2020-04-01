@@ -4,6 +4,7 @@
 #include "node.h"
 #include "plugin.h"
 #include "plugin_class.h"
+#include "port.h"
 
 typedef struct {
     const LilvPlugin *plugin;
@@ -19,6 +20,9 @@ static int plugin_get_bundle_uri(lua_State *L);
 static int plugin_get_name(lua_State *L);
 static int plugin_get_class(lua_State *L);
 static int plugin_get_num_ports(lua_State *L);
+static int plugin_get_port_by_index(lua_State *L);
+static int plugin_get_port_by_symbol(lua_State *L);
+static int plugin_get_port_by_designation(lua_State *L);
 
 //
 // plugin object methods
@@ -33,6 +37,9 @@ static luaL_Reg plugin_methods[] = {
     {"get_name", plugin_get_name},
     {"get_class", plugin_get_class},
     {"get_num_ports", plugin_get_num_ports},
+    {"get_port_by_index", plugin_get_port_by_index},
+    {"get_port_by_symbol", plugin_get_port_by_symbol},
+    {"get_port_by_designation", plugin_get_port_by_designation},
     {NULL, NULL}
 };
 
@@ -132,5 +139,38 @@ static int plugin_get_class(lua_State *L) {
 static int plugin_get_num_ports(lua_State *L) {
     const plugin_t *p = plugin_check(L);
     lua_pushinteger(L, lilv_plugin_get_num_ports(p->plugin));
+    return 1;
+}
+
+static int plugin_get_port_by_index(lua_State *L) {
+    const plugin_t *p = plugin_check(L);
+    lua_Integer index = luaL_checkinteger(L, 2);
+    const LilvPort *port = lilv_plugin_get_port_by_index(p->plugin, index);
+    port_new(L, p->plugin, port);
+    return 1;
+}
+
+static int plugin_get_port_by_symbol(lua_State *L) {
+    const plugin_t *p = plugin_check(L);
+    const node_t *symbol = node_check(L, 2);
+    const LilvPort *port = lilv_plugin_get_port_by_symbol(p->plugin, symbol->node);
+    if (port) {
+        port_new(L, p->plugin, port);
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int plugin_get_port_by_designation(lua_State *L) {
+    const plugin_t *p = plugin_check(L);
+    const node_t *port_class = node_check(L, 2);
+    const node_t *designation = node_check(L, 3);
+    const LilvPort *port = lilv_plugin_get_port_by_designation(p->plugin, port_class->node, designation->node);
+    if (port) {
+        port_new(L, p->plugin, port);
+    } else {
+        lua_pushnil(L);
+    }
     return 1;
 }

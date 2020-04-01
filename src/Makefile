@@ -161,7 +161,8 @@ LILV_OBJS = \
 	node.$(O) \
 	world.$(O) \
 	plugin.$(O) \
-	plugin_class.$(O)
+	plugin_class.$(O) \
+	port.$(O)
 
 
 #------

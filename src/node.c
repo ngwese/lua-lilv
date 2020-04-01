@@ -1,11 +1,6 @@
 #include "lua_lilv.h"
 #include "node.h"
 
-typedef struct {
-    LilvNode *node;
-    bool is_owner;
-} node_t;
-
 //
 // prototypes
 //
@@ -85,7 +80,7 @@ int node_new(lua_State *L, LilvNode *n, bool is_owner) {
 // implementation
 //
 
-static node_t *node_check(lua_State *L, int arg) {
+node_t *node_check(lua_State *L, int arg) {
     void *ud = luaL_checkudata(L, arg, node_classname);
     luaL_argcheck(L, ud != NULL, arg, "'Node' expected");
     return (node_t *)ud;

@@ -4,12 +4,14 @@
 #include "plugin.h"
 #include "plugin_class.h"
 #include "world.h"
+#include "port.h"
 
 static const luaL_Reg mod[] = {
     {"node", node_open},
     {"plugin", plugin_open},
     {"plugin_class", plugin_class_open},
     {"world", world_open},
+    {"port", port_open},
     {NULL, NULL}
 };
 
