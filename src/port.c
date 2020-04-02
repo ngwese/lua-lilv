@@ -20,13 +20,13 @@ bool	lilv_port_has_property (const LilvPlugin *p, const LilvPort *port, const Li
 bool	lilv_port_supports_event (const LilvPlugin *p, const LilvPort *port, const LilvNode *event_type)
 const LilvNodes *	lilv_port_get_classes (const LilvPlugin *plugin, const LilvPort *port)
 bool	lilv_port_is_a (const LilvPlugin *plugin, const LilvPort *port, const LilvNode *port_class)
-void	lilv_port_get_range (const LilvPlugin *plugin, const LilvPort *port, LilvNode **deflt, LilvNode **min, LilvNode **max)
 LilvScalePoints *	lilv_port_get_scale_points (const LilvPlugin *plugin, const LilvPort *port)
 */
 
 int port_get_symbol(lua_State *L);
 int port_get_name(lua_State *L);
 int port_get_index(lua_State *L);
+int port_get_range(lua_State *L);
 
 //
 // plugin object methods
@@ -38,6 +38,7 @@ static luaL_Reg port_methods[] = {
     {"get_symbol", port_get_symbol},
     {"get_name", port_get_name},
     {"get_index", port_get_index},
+    {"get_range", port_get_range},
     {NULL, NULL}
 };
 
@@ -119,5 +120,31 @@ int port_get_index(lua_State *L) {
     const port_t *p = port_check(L);
     uint32_t index = lilv_port_get_index(p->plugin, p->port);
     lua_pushinteger(L, index);
+    return 1;
+}
+
+int port_get_range(lua_State *L) {
+    LilvNode *deft, *min, *max;
+    const port_t *p = port_check(L);
+    lilv_port_get_range(p->plugin, p->port, &deft, &min, &max);
+    lua_newtable(L);
+    if (deft) {
+        node_new(L, deft, true /* is_owned */);
+    } else {
+        lua_pushnil(L);
+    }
+    lua_rawseti(L, -2, 1);
+    if (deft) {
+        node_new(L, min, true /* is_owned */);
+    } else {
+        lua_pushnil(L);
+    }
+    lua_rawseti(L, -2, 2);
+    if (deft) {
+        node_new(L, max, true /* is_owned */);
+    } else {
+        lua_pushnil(L);
+    }
+    lua_rawseti(L, -2, 3);
     return 1;
 }
