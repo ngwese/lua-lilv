@@ -96,6 +96,24 @@ function test_node_new_bool()
   T.assertEquals(a:as_string(), "1")
 end
 
+function test_node_as_integer()
+  w = lilv.World.new()
+  a = w:new_int(1234)
+  T.assertEquals(a:as_integer(), 1234)
+  b = w:new_float(12.34)
+  T.assertIsNil(b:as_integer())
+end
+
+function test_node_as_number()
+  w = lilv.World.new()
+  a = w:new_float(1.2)
+  T.assertAlmostEquals(a:as_number(), 1.2, 0.000001)
+  b = w:new_int(1234)
+  T.assertEquals(b:as_number(), 1234)
+  c = w:new_string("foo")
+  T.assertIsNil(c:as_number())
+end
+
 function test_node_equals()
   w = lilv.World.new()
   a = w:new_string("foo")
