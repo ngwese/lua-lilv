@@ -233,6 +233,14 @@ function TestPlugin:test_get_bundle_uri()
   T.assertEquals(uri:as_string(), where:as_string())
 end
 
+function TestPlugin:test_get_value()
+  local p = self.plugin
+  local sym = self.w:new_uri("http://lv2plug.in/ns/lv2core#symbol")
+  T.assertEquals(p:get_value(sym)[1]:as_string(), "Dmb")
+  local minor = self.w:new_uri("http://lv2plug.in/ns/lv2core#minorVersion")
+  T.assertEquals(p:get_value(minor)[1]:as_integer(), 2)
+end
+
 function TestPlugin:test_get_name()
   local name = self.plugin:get_name()
   T.assertEquals(name, "dummy Dummy")
@@ -240,7 +248,8 @@ end
 
 function TestPlugin:test_get_class()
   local class = self.plugin:get_class()
-  print(class)
+  -- FIXME: implement
+  -- print(class)
 end
 
 function TestPlugin:test_get_num_ports()

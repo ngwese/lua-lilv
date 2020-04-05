@@ -17,6 +17,7 @@ typedef struct {
 static int plugin_verify(lua_State *L);
 static int plugin_get_uri(lua_State *L);
 static int plugin_get_bundle_uri(lua_State *L);
+static int plugin_get_value(lua_State *L);
 static int plugin_get_name(lua_State *L);
 static int plugin_get_class(lua_State *L);
 static int plugin_get_num_ports(lua_State *L);
@@ -34,6 +35,7 @@ static luaL_Reg plugin_methods[] = {
     {"verify", plugin_verify},
     {"get_uri", plugin_get_uri},
     {"get_bundle_uri", plugin_get_bundle_uri},
+    {"get_value", plugin_get_value},
     {"get_name", plugin_get_name},
     {"get_class", plugin_get_class},
     {"get_num_ports", plugin_get_num_ports},
@@ -117,6 +119,26 @@ static int plugin_get_uri(lua_State *L) {
 static int plugin_get_bundle_uri(lua_State *L) {
     const plugin_t *p = plugin_check(L);
     node_new(L, (LilvNode *)lilv_plugin_get_bundle_uri(p->plugin), false /* is_owned */); // FIXME: const
+    return 1;
+}
+
+static int plugin_get_value(lua_State *L) {
+    const plugin_t *p = plugin_check(L);
+    const node_t *predicate = node_check(L, 2);
+    const LilvNodes *list = lilv_plugin_get_value(p->plugin, predicate->node);
+    if (list) {
+        lua_newtable(L);
+        int index = 1;
+        if (lilv_nodes_size(list) > 0) {
+            LILV_FOREACH(nodes, i, list) {
+                const LilvNode *n = lilv_nodes_get(list, i);
+                node_new(L, (LilvNode *)n, true /* is_owned */);
+                lua_seti(L, -2, index++);
+            }
+        }
+    } else {
+        lua_pushnil(L);
+    }
     return 1;
 }
 
