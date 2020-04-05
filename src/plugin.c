@@ -145,8 +145,12 @@ static int plugin_get_num_ports(lua_State *L) {
 static int plugin_get_port_by_index(lua_State *L) {
     const plugin_t *p = plugin_check(L);
     lua_Integer index = luaL_checkinteger(L, 2);
-    const LilvPort *port = lilv_plugin_get_port_by_index(p->plugin, index);
-    port_new(L, p->plugin, port);
+    const LilvPort *port = lilv_plugin_get_port_by_index(p->plugin, index - 1); // convert lua 1 based index
+    if (port) {
+        port_new(L, p->plugin, port);
+    } else {
+        lua_pushnil(L);
+    }
     return 1;
 }
 

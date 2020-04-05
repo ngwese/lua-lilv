@@ -194,5 +194,76 @@ function TestPluginClass:test_get_children()
   -- FIXME: fixture needs class with children
 end
 
+--
+-- Plugin tests
+--
+
+TestPlugin = {}
+
+function TestPlugin:setUp()
+  self.w = lilv.World.new()
+  self.w:load_all()
+  self.plugins = self.w:get_all_plugins()
+  self.plugin = self.plugins[1]
+end
+
+function TestPlugin:tearDown()
+  self.plugin = nil
+  self.plugins = nil
+  self.w = nil
+  -- NOTE: this is not strictly needed but excercises memory mansgement which is not directly tested
+  collectgarbage()
+end
+
+function TestPlugin:test_verify()
+  local ok = self.plugin:verify()
+  T.assertTrue(ok)
+end
+
+function TestPlugin:test_get_uri()
+  local uri = self.plugin:get_uri()
+  T.assertNotNil(uri)
+  T.assertEquals(uri:as_string(), "https://github.com/ngwese/lua-lilv/test/fixtures/dummy.lv2/Dummy")
+end
+
+function TestPlugin:test_get_bundle_uri()
+  local uri = self.plugin:get_bundle_uri()
+  local path = os.getenv("LV2_PATH") .. "/dummy.lv2/"
+  local where = self.w:new_file_uri("", path)
+  T.assertEquals(uri:as_string(), where:as_string())
+end
+
+function TestPlugin:test_get_name()
+  local name = self.plugin:get_name()
+  T.assertEquals(name, "dummy Dummy")
+end
+
+function TestPlugin:test_get_class()
+  local class = self.plugin:get_class()
+  print(class)
+end
+
+function TestPlugin:test_get_num_ports()
+  T.assertEquals(self.plugin:get_num_ports(), 8)
+end
+
+function TestPlugin:test_get_port_by_index()
+  -- ensure lua 1 base index converted to zero based index
+  T.assertNil(self.plugin:get_port_by_index(0))
+  T.assertIsUserdata(self.plugin:get_port_by_index(1))
+  T.assertIsUserdata(self.plugin:get_port_by_index(8))
+  T.assertNil(self.plugin:get_port_by_index(9))
+end
+
+function TestPlugin:test_get_port_by_symbol()
+  -- ensure lua 1 base index converted to zero based index
+  local missing = self.w:new_string("bogus_port_sym")
+  local real = self.w:new_string("right_in")
+  T.assertNil(self.plugin:get_port_by_symbol(missing))
+  T.assertIsUserdata(self.plugin:get_port_by_symbol(real))
+end
+
+-- function TestPlugin:test_get_port_by_designation()
+-- end
 
 os.exit(T.LuaUnit.run())
