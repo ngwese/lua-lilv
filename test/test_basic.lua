@@ -272,7 +272,24 @@ function TestPlugin:test_get_port_by_symbol()
   T.assertIsUserdata(self.plugin:get_port_by_symbol(real))
 end
 
--- function TestPlugin:test_get_port_by_designation()
--- end
+function TestPlugin:test_get_port_by_designation()
+  -- verify lookup works
+  local class_in = self.w:new_uri("http://lv2plug.in/ns/lv2core#InputPort")
+  local class_out = self.w:new_uri("http://lv2plug.in/ns/lv2core#OutputPort")
+  -- designation example `pg:left
+  local desig = self.w:new_uri("http://lv2plug.in/ns/ext/port-groups#left")
+  local p = self.plugin
+  local left_in = p:get_port_by_designation(class_in, desig)
+  T.assertIsUserdata(left_in)
+  local left_out = p:get_port_by_designation(class_out, desig)
+  T.assertIsUserdata(left_out)
+  T.assertTrue(left_in ~= left_out)
+
+  -- ensure failed lookup returns nil
+  local bad_desig = self.w:new_uri("http://lv2plug.in/ns/ext/port-groups#bogus")
+  T.assertNil(p:get_port_by_designation(class_in, bad_desig))
+  local bad_class = self.w:new_uri("http://lv2plug.in/ns/lv2core#CarPort")
+  T.assertNil(p:get_port_by_designation(bad_class, desig))
+end
 
 os.exit(T.LuaUnit.run())
