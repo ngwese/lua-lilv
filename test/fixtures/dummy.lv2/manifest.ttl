@@ -1,0 +1,43 @@
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix lv2: <http://lv2plug.in/ns/lv2core#> .
+@prefix dummy: <https://github.com/ngwese/lua-lilv/test/fixtures/dummy.lv2/> .
+@prefix pg: <http://lv2plug.in/ns/ext/port-groups#> .
+@prefix pset: <http://lv2plug.in/ns/ext/presets#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+<https://github.com/ngwese#me>
+	a foaf:Person ;
+	foaf:name "Some Person" ;
+	foaf:mbox <mailto:some@person.com> .
+
+dummy:
+	a doap:Project ;
+	lv2:symbol "dummy" ;
+	doap:name "dummy LV2" ;
+	doap:shortdesc "Just a test fixture." ;
+	doap:homepage <https://github.com/ngwese/lua-lilv> ;
+	doap:maintainer <https://github.com/ngwese#me> ;
+	doap:developer [
+		a foaf:Person ;
+		foaf:name "Another Person" ;
+		foaf:mbox <another@person.com>
+	] .
+
+dummy:mainIn
+	a pg:StereoGroup ,
+		pg:InputGroup ;
+	rdfs:label "Input" ;
+	lv2:symbol "in" .
+
+dummy:mainOut
+	a pg:StereoGroup ,
+		pg:OutputGroup ;
+	pg:source dummy:mainIn ;
+	rdfs:label "Output" ;
+	lv2:symbol "out" .
+
+dummy:Dummy
+	a lv2:Plugin ;
+	rdfs:seeAlso <Dummy.ttl> ;
+	lv2:binary <Dummy.dylib> .

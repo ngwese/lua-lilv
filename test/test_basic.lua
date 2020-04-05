@@ -25,6 +25,14 @@ function test_world_new()
   T.assertIsUserdata(w)
 end
 
+function test_world_loading()
+  w = lilv.World.new()
+  w:load_all()
+  plugins = w:get_all_plugins()
+  T.assertNotNil(plugins)
+  T.assertEquals(#plugins, 1)
+end
+
 --
 -- Node tests
 --
