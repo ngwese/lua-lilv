@@ -110,6 +110,7 @@ static int world_new(lua_State *L) {
 
 static int world_free(lua_State *L) {
     world_t *w = world_check(L);
+    // printf("world_free %p\n", w->world);
     if (w->world != NULL) {
         lilv_world_free(w->world);
         w->world = NULL;
