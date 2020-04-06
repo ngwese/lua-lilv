@@ -258,8 +258,8 @@ end
 
 function TestPlugin:test_get_class()
   local class = self.plugin:get_class()
-  -- FIXME: implement
-  -- print(class)
+  -- NOTE: not sure how one discovers the more specific "ReverbPlugin" class
+  T.assertEquals(class:get_uri():as_string(), "http://lv2plug.in/ns/lv2core#Plugin")
 end
 
 function TestPlugin:test_get_num_ports()
