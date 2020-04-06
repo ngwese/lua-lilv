@@ -4,6 +4,21 @@ package.path = "../src/?.lua;" .. package.path
 T = require('luaunit')
 lilv = require('lilv')
 
+function shared_setup(self)
+  self.w = lilv.World.new()
+  self.w:load_all()
+  self.plugins = self.w:get_all_plugins()
+  self.plugin = self.plugins[1]
+end
+
+function shared_teardown(self)
+  self.plugin = nil
+  self.plugins = nil
+  self.w = nil
+  -- NOTE: this is not strictly needed but exercises memory mansgement which is not directly tested
+  collectgarbage()
+end
+
 --
 -- Module test
 --
@@ -151,20 +166,13 @@ end
 TestPluginClass = {}
 
 function TestPluginClass:setUp()
-  self.w = lilv.World.new()
-  self.w:load_all()
-  self.plugins = self.w:get_all_plugins()
-  self.plugin = self.plugins[1]
+  shared_setup(self)
   self.class = self.plugin:get_class()
 end
 
 function TestPluginClass:tearDown()
   self.class = nil
-  self.plugin = nil
-  self.plugins = nil
-  self.w = nil
-  -- NOTE: this is not strictly needed but excercises memory mansgement which is not directly tested
-  collectgarbage()
+  shared_teardown(self)
 end
 
 function TestPluginClass:test_get_uri()
@@ -201,18 +209,11 @@ end
 TestPlugin = {}
 
 function TestPlugin:setUp()
-  self.w = lilv.World.new()
-  self.w:load_all()
-  self.plugins = self.w:get_all_plugins()
-  self.plugin = self.plugins[1]
+  shared_setup(self)
 end
 
 function TestPlugin:tearDown()
-  self.plugin = nil
-  self.plugins = nil
-  self.w = nil
-  -- NOTE: this is not strictly needed but excercises memory mansgement which is not directly tested
-  collectgarbage()
+  shared_teardown(self)
 end
 
 function TestPlugin:test_verify()
@@ -291,5 +292,52 @@ function TestPlugin:test_get_port_by_designation()
   local bad_class = self.w:new_uri("http://lv2plug.in/ns/lv2core#CarPort")
   T.assertNil(p:get_port_by_designation(bad_class, desig))
 end
+
+--
+-- Port
+--
+
+TestPort = {}
+
+function TestPort:setUp()
+  shared_setup(self)
+  self.mix_port = self.plugin:get_port_by_symbol(self.w:new_string("mix"))
+  self.out_port = self.plugin:get_port_by_symbol(self.w:new_string("left_out"))
+  -- T.assertNotNil(self.mix_port)
+  -- T.assertNotNil(self.out_port)
+end
+
+function TestPort:tearDown()
+  self.mix_port = nil
+  self.out_port = nil
+  shared_teardown(self)
+end
+
+function TestPort:test_get_symbol()
+  local s = self.mix_port:get_symbol()
+  T.assertIsUserdata(s)
+  T.assertEquals(s:as_string(), "mix")
+end
+
+function TestPort:test_get_name()
+  local n = self.out_port:get_name()
+  T.assertIsString(n)
+  T.assertEquals(n, "Left Out")
+end
+
+function TestPort:test_get_index()
+  local idx = self.mix_port:get_index()
+  T.assertEquals(idx, 3)
+end
+
+function TestPort:test_get_range()
+  local r = self.mix_port:get_range()
+  T.assertIsTable(r)
+  T.assertEquals(#r, 3)  -- default, min, max
+  T.assertAlmostEquals(r[1], 0.9, 0.00001) -- default
+  T.assertAlmostEquals(r[2], 0.0) -- min
+  T.assertAlmostEquals(r[3], 1.0) -- max
+end
+
 
 os.exit(T.LuaUnit.run())

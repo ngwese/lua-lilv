@@ -92,7 +92,7 @@ node_t *node_check(lua_State *L, int arg) {
 
 static int node_free(lua_State *L) {
     node_t *n = node_check(L, 1);
-    if (n->is_owner) {
+    if (n->is_owner && n->node) {
         lilv_node_free(n->node);
     }
     return 0;

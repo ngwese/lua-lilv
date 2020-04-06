@@ -113,14 +113,20 @@ int port_get_symbol(lua_State *L) {
 int port_get_name(lua_State *L) {
     const port_t *p = port_check(L);
     LilvNode *s = lilv_port_get_name(p->plugin, p->port);
-    node_new(L, s, true /* is_owned */);
+    if (s) {
+        lua_pushstring(L, lilv_node_as_string(s));
+    } else {
+        lua_pushnil(L);
+    }
+    lilv_node_free(s);
     return 1;
 }
 
 int port_get_index(lua_State *L) {
     const port_t *p = port_check(L);
     uint32_t index = lilv_port_get_index(p->plugin, p->port);
-    lua_pushinteger(L, index);
+    // convert index to 1s base to match plugin_get_port_by_index
+    lua_pushinteger(L, index + 1);
     return 1;
 }
 
@@ -130,19 +136,22 @@ int port_get_range(lua_State *L) {
     lilv_port_get_range(p->plugin, p->port, &deft, &min, &max);
     lua_newtable(L);
     if (deft) {
-        node_new(L, deft, true /* is_owned */);
+        lua_pushnumber(L, lilv_node_as_float(deft));
+        lilv_node_free(deft);
     } else {
         lua_pushnil(L);
     }
     lua_rawseti(L, -2, 1);
-    if (deft) {
-        node_new(L, min, true /* is_owned */);
+    if (min) {
+        lua_pushnumber(L, lilv_node_as_float(min));
+        lilv_node_free(min);
     } else {
         lua_pushnil(L);
     }
     lua_rawseti(L, -2, 2);
-    if (deft) {
-        node_new(L, max, true /* is_owned */);
+    if (max) {
+        lua_pushnumber(L, lilv_node_as_float(max));
+        lilv_node_free(max);
     } else {
         lua_pushnil(L);
     }
