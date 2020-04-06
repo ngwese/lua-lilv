@@ -15,7 +15,7 @@ function shared_teardown(self)
   self.plugin = nil
   self.plugins = nil
   self.w = nil
-  -- NOTE: this is not strictly needed but exercises memory mansgement which is not directly tested
+  -- NOTE: this is not strictly needed but exercises memory management which is not directly tested
   collectgarbage()
 end
 
