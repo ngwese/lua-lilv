@@ -12,19 +12,17 @@ typedef struct {
 //
 
 /*
-lilv_port_get_node (const LilvPlugin *plugin, const LilvPort *port)
-LilvNodes *	lilv_port_get_value (const LilvPlugin *plugin, const LilvPort *port, const LilvNode *predicate)
-LilvNode *	lilv_port_get (const LilvPlugin *plugin, const LilvPort *port, const LilvNode *predicate)
-LilvNodes *	lilv_port_get_properties (const LilvPlugin *plugin, const LilvPort *port)
-bool	lilv_port_has_property (const LilvPlugin *p, const LilvPort *port, const LilvNode *property_uri)
-bool	lilv_port_supports_event (const LilvPlugin *p, const LilvPort *port, const LilvNode *event_type)
-const LilvNodes *	lilv_port_get_classes (const LilvPlugin *plugin, const LilvPort *port)
 LilvScalePoints *	lilv_port_get_scale_points (const LilvPlugin *plugin, const LilvPort *port)
 */
 
+int port_get_value(lua_State *L);
+int port_get_properties(lua_State *L);
+int port_has_property(lua_State *L);
+int port_supports_event(lua_State *L);
 int port_get_symbol(lua_State *L);
 int port_get_name(lua_State *L);
 int port_get_index(lua_State *L);
+int port_get_classes(lua_State *L);
 int port_get_range(lua_State *L);
 int port_is_a(lua_State *L);
 
@@ -35,9 +33,14 @@ static char *port_modulename = "Port";
 static char *port_classname = "lilv.Port";
 
 static luaL_Reg port_methods[] = {
+    {"get_value", port_get_value},
+    {"get_properties", port_get_properties},
+    {"has_property", port_has_property},
+    {"supports_event", port_supports_event},
     {"get_symbol", port_get_symbol},
     {"get_name", port_get_name},
     {"get_index", port_get_index},
+    {"get_classes", port_get_classes},
     {"get_range", port_get_range},
     {"is_a", port_is_a},
     {NULL, NULL}
@@ -103,6 +106,59 @@ static port_t *port_check(lua_State *L) {
     return (port_t *)ud;
 }
 
+int port_get_value(lua_State *L) {
+    const port_t *p = port_check(L);
+    const node_t *predicate = node_check(L, 2);
+    LilvNodes *list = (LilvNode *)lilv_port_get_value(p->plugin, p->port, predicate->node);
+    if (list) {
+        lua_newtable(L);
+        int index = 1;
+        if (lilv_nodes_size(list) > 0) {
+            LILV_FOREACH(nodes, i, list) {
+                const LilvNode *n = lilv_nodes_get(list, i);
+                node_new(L, (LilvNode *)n, true /* is_owned */);
+                lua_seti(L, -2, index++);
+            }
+        }
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+int port_get_properties(lua_State *L) {
+    const port_t *p = port_check(L);
+    LilvNodes *list = (LilvNode *)lilv_port_get_properties(p->plugin, p->port);
+    lua_newtable(L);
+    if (list) {
+        int index = 1;
+        if (lilv_nodes_size(list) > 0) {
+            LILV_FOREACH(nodes, i, list) {
+                const LilvNode *n = lilv_nodes_get(list, i);
+                // NOTE: lilv documentation doesn't indicate if nodes need to be
+                // freed, we assume no here.
+                node_new(L, (LilvNode *)n, false /* is_owned */);
+                lua_seti(L, -2, index++);
+            }
+        }
+    }
+    return 1;
+}
+
+int port_has_property(lua_State *L) {
+    const port_t *p = port_check(L);
+    const node_t *prop = node_check(L, 2);
+    lua_pushboolean(L, lilv_port_has_property(p->plugin, p->port, prop->node));
+    return 1;
+}
+
+int port_supports_event(lua_State *L) {
+    const port_t *p = port_check(L);
+    const node_t *event = node_check(L, 2);
+    lua_pushboolean(L, lilv_port_supports_event(p->plugin, p->port, event->node));
+    return 1;
+}
+
 int port_get_symbol(lua_State *L) {
     const port_t *p = port_check(L);
     LilvNode *s = (LilvNode *)lilv_port_get_symbol(p->plugin, p->port); // FIXME: const correctness
@@ -127,6 +183,23 @@ int port_get_index(lua_State *L) {
     uint32_t index = lilv_port_get_index(p->plugin, p->port);
     // convert index to 1s base to match plugin_get_port_by_index
     lua_pushinteger(L, index + 1);
+    return 1;
+}
+
+int port_get_classes(lua_State *L) {
+    const port_t *p = port_check(L);
+    const LilvNodes *list = lilv_port_get_classes(p->plugin, p->port);
+    lua_newtable(L);
+    if (list) {
+        int index = 1;
+        if (lilv_nodes_size(list) > 0) {
+            LILV_FOREACH(nodes, i, list) {
+                const LilvNode *n = lilv_nodes_get(list, i);
+                node_new(L, (LilvNode *)n, false /* is_owned */);
+                lua_seti(L, -2, index++);
+            }
+        }
+    }
     return 1;
 }
 

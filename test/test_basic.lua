@@ -31,6 +31,7 @@ function TestModule:test_exports()
   T.assertIsTable(lilv.Node)
   T.assertIsTable(lilv.Plugin)
   T.assertIsTable(lilv.PluginClass)
+  T.assertIsTable(lilv.Port)
 end
 
 --
@@ -50,7 +51,7 @@ function TestWorld:test_loading()
   w:load_all()
   plugins = w:get_all_plugins()
   T.assertNotNil(plugins)
-  T.assertEquals(#plugins, 1)
+  T.assertEquals(#plugins, 2) --  Dummy, Synth
 end
 
 --
@@ -236,10 +237,18 @@ end
 
 function TestPlugin:test_get_value()
   local p = self.plugin
+  -- ensure existing properties work
   local sym = self.w:new_uri("http://lv2plug.in/ns/lv2core#symbol")
   T.assertEquals(p:get_value(sym)[1]:as_string(), "Dmb")
   local minor = self.w:new_uri("http://lv2plug.in/ns/lv2core#minorVersion")
   T.assertEquals(p:get_value(minor)[1]:as_integer(), 2)
+  local port = self.w:new_uri("http://lv2plug.in/ns/lv2core#port")
+  local port_list = p:get_value(port)
+  T.assertEquals(#port_list, 8)
+
+  -- ensure missing property is nil
+  local bogus = self.w:new_uri("http://lv2plug.in/ns/lv2core#bogus")
+  T.assertIsNil(p:get_value(bogus))
 end
 
 function TestPlugin:test_get_name()
@@ -303,14 +312,52 @@ function TestPort:setUp()
   shared_setup(self)
   self.mix_port = self.plugin:get_port_by_symbol(self.w:new_string("mix"))
   self.out_port = self.plugin:get_port_by_symbol(self.w:new_string("left_out"))
-  -- T.assertNotNil(self.mix_port)
-  -- T.assertNotNil(self.out_port)
+
+  self.synth = self.plugins[2]
+  self.prop_port = self.synth:get_port_by_symbol(self.w:new_string("prop_example"))
 end
 
 function TestPort:tearDown()
   self.mix_port = nil
   self.out_port = nil
+  self.synth = nil
+  self.prop_port = nil
   shared_teardown(self)
+end
+
+function TestPort:test_get_value()
+  local port = self.mix_port
+  local sym = self.w:new_uri("http://lv2plug.in/ns/lv2core#symbol")
+  T.assertEquals(port:get_value(sym)[1]:as_string(), "mix")
+  -- ensure missing property is nil
+  local bogus = self.w:new_uri("http://lv2plug.in/ns/lv2core#bogus")
+  T.assertIsNil(port:get_value(bogus))
+end
+
+function TestPort:test_get_properties()
+  -- port with properties
+  local props = self.prop_port:get_properties()
+  T.assertIsTable(props)
+  T.assertEquals(#props, 2)
+
+  -- port without properites
+  local props = self.mix_port:get_properties()
+  T.assertIsTable(props)
+  T.assertEquals(#props, 0)
+end
+
+function TestPort:test_has_property()
+  local expensive = self.w:new_uri("http://lv2plug.in/ns/ext/port-props/#expensive")
+  T.assertTrue(self.prop_port:has_property(expensive))
+  local strict = self.w:new_uri("http://lv2plug.in/ns/ext/port-props/#hasStrictBounds")
+  T.assertFalse(self.prop_port:has_property(strict))
+end
+
+function TestPort:test_supports_event()
+  local midi_port = self.synth:get_port_by_index(5)
+  local event_type = self.w:new_uri("http://lv2plug.in/ns/ext/midi#MidiEvent")
+  T.assertTrue(midi_port:supports_event(event_type))
+  T.assertFalse(self.mix_port:supports_event(event_type))
 end
 
 function TestPort:test_get_symbol()
@@ -328,6 +375,15 @@ end
 function TestPort:test_get_index()
   local idx = self.mix_port:get_index()
   T.assertEquals(idx, 3)
+end
+
+function TestPort:test_get_classes()
+  local classes = self.mix_port:get_classes()
+  T.assertIsTable(classes)
+  T.assertEquals(#classes, 2)
+  -- MAINT: not clear if the ordering is random or deterministic
+  T.assertEquals(classes[1]:as_string(), "http://lv2plug.in/ns/lv2core#ControlPort")
+  T.assertEquals(classes[2]:as_string(), "http://lv2plug.in/ns/lv2core#InputPort")
 end
 
 function TestPort:test_get_range()

@@ -41,3 +41,8 @@ dummy:Dummy
 	a lv2:Plugin ;
 	rdfs:seeAlso <Dummy.ttl> ;
 	lv2:binary <Dummy.dylib> .
+
+dummy:Synth
+  a lv2:Plugin ;
+  rdfs:seeAlso <Synth.ttl> ;
+  lv2:binary <Synth.dylib> .
